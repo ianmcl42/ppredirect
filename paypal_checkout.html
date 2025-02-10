@@ -3,91 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Shopping Page</title>
-    <style>
-        .item { margin-bottom: 20px; }
-        .options, .checkout { display: none; margin-top: 10px; }
-        .quantity-controls { display: flex; align-items: center; gap: 5px; }
-        .quantity-controls button { width: 30px; height: 30px; }
-    </style>
+    <title>PayPal Smart Buttons with Quantity</title>
     <script src="https://www.paypal.com/sdk/js?client-id=ASdlcVzHE1iXP9mnYwt3XI55dgDp507jxMKhc7y-eihEp6uU1fZPDNmnYFIvnelBegyPd7yRjr3c-nG-&currency=AUD"></script>
+    <style>
+        /* Plus/Minus Buttons */
+        .quantity-btn {
+            background-color: #003087; /* PayPal blue */
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .quantity-btn:hover {
+            background-color: #001C5F; /* Darker blue */
+        }
+
+        /* Quantity Input */
+        #quantity {
+            width: 40px;
+            text-align: center;
+            font-size: 16px;
+            margin: 0 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        /* Add to Cart Button */
+        .add-to-cart {
+            background-color: #FFC439; /* PayPal yellow */
+            color: black;
+            border: none;
+            padding: 8px 16px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 4px;
+            display: block;
+            margin: 10px auto;
+        }
+        .add-to-cart:hover {
+            background-color: #E6B800; /* Darker yellow */
+        }
+
+        /* PayPal Button Container */
+        #paypal-button-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        /* Container Styling */
+        .product-container {
+            text-align: center;
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div class="item" data-price="10" data-name="Item A">
-        <h3>Item A - $10</h3>
-        <button class="buy-now">Buy Now</button>
-        <div class="options">
-            <label><input type="checkbox" class="option" value="5" data-name="Option 1"> Option 1 (+$5)</label><br>
-            <label><input type="checkbox" class="option" value="8" data-name="Option 2"> Option 2 (+$8)</label><br>
-            <div class="quantity-controls">
-                <button class="minus">-</button>
-                <span class="quantity">1</span>
-                <button class="plus">+</button>
-            </div>
-        </div>
-    </div>
-    
-    <div class="item" data-price="15" data-name="Item B">
-        <h3>Item B - $15</h3>
-        <button class="buy-now">Buy Now</button>
-        <div class="options">
-            <label><input type="checkbox" class="option" value="3" data-name="Option A"> Option A (+$3)</label><br>
-            <label><input type="checkbox" class="option" value="6" data-name="Option B"> Option B (+$6)</label><br>
-            <div class="quantity-controls">
-                <button class="minus">-</button>
-                <span class="quantity">1</span>
-                <button class="plus">+</button>
-            </div>
-        </div>
-    </div>
-    
-<div id="paypal-button-container"></div>
-    
-    <script>
-        document.querySelectorAll('.buy-now').forEach(button => {
-            button.addEventListener('click', function() {
-                document.querySelectorAll('.options').forEach(opt => opt.style.display = 'none');
-                document.querySelectorAll('.checkout').forEach(chk => chk.style.display = 'none');
-                
-                const item = this.closest('.item');
-                const optionsDiv = item.querySelector('.options');
-                optionsDiv.style.display = 'block';
-                document.getElementById('checkout').style.display = 'block';
-                
-                document.getElementById('checkout').onclick = function() {
-                    let total = parseFloat(item.dataset.price);
-                    let description = item.dataset.name;
-                    
-                    item.querySelectorAll('.option:checked').forEach(option => {
-                        total += parseFloat(option.value);
-                        description += ' + ' + option.dataset.name;
-                    });
-                    
-                    const quantity = parseInt(item.querySelector('.quantity').textContent);
-                    total *= quantity;
-                    
-                    window.location.href = `https://www.paypal.com/checkout?amount=${total}&description=${encodeURIComponent(description)}`;
-                };
+
+<div class="product-container">
+    <h2>Product Name</h2>
+    <p>Price: $10.00 AUD</p>
+
+    <!-- Quantity Selector -->
+    <button class="quantity-btn" onclick="decreaseQuantity()">−</button>
+    <input type="text" id="quantity" value="1" readonly>
+    <button class="quantity-btn" onclick="increaseQuantity()">+</button>
+
+    <!-- Add to Cart Button -->
+    <button class="add-to-cart" onclick="addToCart()">Add to Cart</button>
+
+    <!-- PayPal Button Container -->
+    <div id="paypal-button-container"></div>
+</div>
+
+<script>
+    let quantity = 1;
+    const price = 10.00; // Item price in AUD
+
+    function increaseQuantity() {
+        quantity++;
+        document.getElementById("quantity").value = quantity;
+    }
+
+    function decreaseQuantity() {
+        if (quantity > 1) {
+            quantity--;
+            document.getElementById("quantity").value = quantity;
+        }
+    }
+
+    function addToCart() {
+        alert(`Added ${quantity} item(s) to cart.`);
+    }
+
+    paypal.Buttons({
+        createOrder: function(data, actions) {
+            return actions.order.create({
+                purchase_units: [{
+                    amount: {
+                        currency_code: "AUD",
+                        value: (price * quantity).toFixed(2) // Calculate total price
+                    }
+                }]
             });
-        });
-        
-        document.querySelectorAll('.plus').forEach(button => {
-            button.addEventListener('click', function() {
-                let quantitySpan = this.previousElementSibling;
-                let quantity = parseInt(quantitySpan.textContent);
-                quantitySpan.textContent = quantity + 1;
+        },
+        onApprove: function(data, actions) {
+            return actions.order.capture().then(function(details) {
+                alert('Transaction completed by ' + details.payer.name.given_name);
             });
-        });
-        
-        document.querySelectorAll('.minus').forEach(button => {
-            button.addEventListener('click', function() {
-                let quantitySpan = this.nextElementSibling;
-                let quantity = parseInt(quantitySpan.textContent);
-                if (quantity > 1) {
-                    quantitySpan.textContent = quantity - 1;
-                }
-            });
-        });
-    </script>
+        }
+    }).render("#paypal-button-container");
+
+</script>
+
 </body>
 </html>
