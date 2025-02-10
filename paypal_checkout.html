@@ -10,6 +10,7 @@
         .quantity-controls { display: flex; align-items: center; gap: 5px; }
         .quantity-controls button { width: 30px; height: 30px; }
     </style>
+    <script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=AUD"></script>
 </head>
 <body>
     <div class="item" data-price="10" data-name="Item A">
@@ -40,7 +41,7 @@
         </div>
     </div>
     
-    <button id="checkout" class="checkout">Checkout</button>
+<div id="paypal-button-container"></div>
     
     <script>
         document.querySelectorAll('.buy-now').forEach(button => {
