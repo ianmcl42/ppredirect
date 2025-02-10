@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Page</title>
+    <style>
+        .item { margin-bottom: 20px; }
+        .options, .checkout { display: none; margin-top: 10px; }
+        .quantity-controls { display: flex; align-items: center; gap: 5px; }
+        .quantity-controls button { width: 30px; height: 30px; }
+    </style>
+</head>
+<body>
+    <div class="item" data-price="10" data-name="Item A">
+        <h3>Item A - $10</h3>
+        <button class="buy-now">Buy Now</button>
+        <div class="options">
+            <label><input type="checkbox" class="option" value="5" data-name="Option 1"> Option 1 (+$5)</label><br>
+            <label><input type="checkbox" class="option" value="8" data-name="Option 2"> Option 2 (+$8)</label><br>
+            <div class="quantity-controls">
+                <button class="minus">-</button>
+                <span class="quantity">1</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="item" data-price="15" data-name="Item B">
+        <h3>Item B - $15</h3>
+        <button class="buy-now">Buy Now</button>
+        <div class="options">
+            <label><input type="checkbox" class="option" value="3" data-name="Option A"> Option A (+$3)</label><br>
+            <label><input type="checkbox" class="option" value="6" data-name="Option B"> Option B (+$6)</label><br>
+            <div class="quantity-controls">
+                <button class="minus">-</button>
+                <span class="quantity">1</span>
+                <button class="plus">+</button>
+            </div>
+        </div>
+    </div>
+    
+    <button id="checkout" class="checkout">Checkout</button>
+    
+    <script>
+        document.querySelectorAll('.buy-now').forEach(button => {
+            button.addEventListener('click', function() {
+                document.querySelectorAll('.options').forEach(opt => opt.style.display = 'none');
+                document.querySelectorAll('.checkout').forEach(chk => chk.style.display = 'none');
+                
+                const item = this.closest('.item');
+                const optionsDiv = item.querySelector('.options');
+                optionsDiv.style.display = 'block';
+                document.getElementById('checkout').style.display = 'block';
+                
+                document.getElementById('checkout').onclick = function() {
+                    let total = parseFloat(item.dataset.price);
+                    let description = item.dataset.name;
+                    
+                    item.querySelectorAll('.option:checked').forEach(option => {
+                        total += parseFloat(option.value);
+                        description += ' + ' + option.dataset.name;
+                    });
+                    
+                    const quantity = parseInt(item.querySelector('.quantity').textContent);
+                    total *= quantity;
+                    
+                    window.location.href = `https://www.paypal.com/checkout?amount=${total}&description=${encodeURIComponent(description)}`;
+                };
+            });
+        });
+        
+        document.querySelectorAll('.plus').forEach(button => {
+            button.addEventListener('click', function() {
+                let quantitySpan = this.previousElementSibling;
+                let quantity = parseInt(quantitySpan.textContent);
+                quantitySpan.textContent = quantity + 1;
+            });
+        });
+        
+        document.querySelectorAll('.minus').forEach(button => {
+            button.addEventListener('click', function() {
+                let quantitySpan = this.nextElementSibling;
+                let quantity = parseInt(quantitySpan.textContent);
+                if (quantity > 1) {
+                    quantitySpan.textContent = quantity - 1;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
